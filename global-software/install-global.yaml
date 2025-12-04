@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/foreground
+spec:
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://github.com/learnwithtwoheads/argocd-bootstrapping.git
+    targetRevision: main
+    path: app-of-apps
+    helm:
+      valuesObject:
+        global:
+          # Default source repository URL
+          repoURL: https://github.com/learnwithtwoheads/argocd-bootstrapping.git
+          # Target revision (branch, tag, or commit)
+          targetRevision: main
+          # Default destination cluster
+          destination:
+            server: https://kubernetes.default.svc
+            # Default namespace (can be overridden per application)
+            namespace: default
+
+        # ArgoCD project to deploy applications to
+        project: default
+
+        # List of applications to deploy
+        applications:
+          - name: traefik
+            targetRevision: 37.4.0
+            repoURL: https://traefik.github.io/charts
+            namespace: traefik
+            helm:
+              chart: traefik
+              releaseName: traefik
+              valuesObject:
+                metrics:
+                  prometheus:
+                    entryPoint: metrics
+                    service:
+                      enabled: true
+
+        # Default sync policy for all applications (can be overridden per app)
+        defaultSyncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
+            - PruneLast=true
+
+        # Default retry policy
+        defaultRetryPolicy:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+          destination:
+            server: https://kubernetes.default.svc
+            namespace: argocd
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true
+            syncOptions:
+              - CreateNamespace=true

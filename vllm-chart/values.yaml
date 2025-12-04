@@ -1,0 +1,109 @@
+# Default values for vllm.
+
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+  annotations: {}
+
+resources:
+  limits:
+    nvidia.com/gpu: 8 
+  requests:
+    nvidia.com/gpu: 8
+
+# PersistentVolumeClaim configuration
+persistence:
+  enabled: true
+  storageClassName: "compute-csi-default-sc"
+  accessMode: ReadWriteOnce
+  size: 2000Gi
+  mountPath: /root/.cache/huggingface
+
+# vLLM specific configuration
+vllm:
+  model: mistralai/Mistral-7B-Instruct-v0.3
+  # Additional arguments to pass to vLLM
+  extraArgs: []
+    
+  env: []
+  #   - name: HUGGING_FACE_HUB_TOKEN
+  #     value: "your-token-here"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Ingress configuration for Traefik
+ingress:
+  enabled: true
+  annotations: {}
+  entryPoints:
+    - websecure
+  # Host match rule for the ingress route (e.g., "Host(`example.com`)")
+  match: "Host(`mistral.domeasolid.app`)"
+  tls:
+    enabled: true
+    secretName: mistral-tls
+
+# Certificate configuration for cert-manager
+certificate:
+  enabled: true 
+  dnsNames:
+    - mistral.domeasolid.app
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: mistral-tls
+  usages:
+    - digital signature
+    - key encipherment
+
+# Chat template configuration
+# When enabled, the chat template content will be mounted as a file via ConfigMap
+# and passed to vLLM using --chat-template=/path/to/file
+chatTemplate:
+  enabled: false
+  # The chat template content (supports Jinja2 format)
+  # content: ""
+  # Example content:
+  content: |
+    <|User|>
+    {{ user_message }}
+    <|Assistant|>
+  # The filename for the chat template
+  filename: "chat_template.jinja"
+  # The mount path where the chat template will be available
+  mountPath: "/app/chat-templates"

@@ -1,0 +1,18 @@
+{{- if .Values.certificate.enabled -}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "vllm.fullname" . }}-tls
+  labels:
+    {{- include "vllm.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+    {{- toYaml .Values.certificate.dnsNames | nindent 4 }}
+  issuerRef:
+    group: {{ .Values.certificate.issuerRef.group }}
+    kind: {{ .Values.certificate.issuerRef.kind }}
+    name: {{ .Values.certificate.issuerRef.name }}
+  secretName: {{ .Values.certificate.secretName }}
+  usages:
+    {{- toYaml .Values.certificate.usages | nindent 4 }}
+{{- end }}
