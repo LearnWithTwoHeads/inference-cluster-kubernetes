@@ -44,14 +44,14 @@ resources:
 # PersistentVolumeClaim configuration
 persistence:
   enabled: true
-  storageClassName: "compute-csi-default-sc"
-  accessMode: ReadWriteOnce
+  storageClassName: "gcore-nfs-3ab538e0-f64d-47bf-a72a-4fa646944598"
+  accessMode: ReadWriteMany
   size: 2000Gi
   mountPath: /root/.cache/huggingface
 
 # vLLM specific configuration
 vllm:
-  model: mistralai/Mistral-7B-Instruct-v0.3
+  model: openai/gpt-oss-20b
   # Additional arguments to pass to vLLM
   extraArgs: []
     
@@ -72,16 +72,16 @@ ingress:
   entryPoints:
     - websecure
   # Host match rule for the ingress route (e.g., "Host(`example.com`)")
-  match: "Host(`mistral.domeasolid.app`)"
+  match: "Host(`gpt-oss.domeasolid.app`)"
   tls:
     enabled: true
-    secretName: mistral-tls
+    secretName: gpt-oss-tls
 
 # Certificate configuration for cert-manager
 certificate:
   enabled: true 
   dnsNames:
-    - mistral.domeasolid.app
+    - gpt-oss.domeasolid.app
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer

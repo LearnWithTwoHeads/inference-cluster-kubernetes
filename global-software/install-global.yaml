@@ -1,3 +1,4 @@
+# Please make sure that the Grafana Cloud credentials are in the Kubernetes cluster as a secret
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -37,6 +38,86 @@ spec:
 
         # List of applications to deploy
         applications:
+          - name: otel-collector-metrics
+            targetRevision: 0.140.0
+            repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+            helm:
+              chart: opentelemetry-collector
+              releaseName: otel-collector-metrics
+              valuesObject:
+                mode: deployment
+
+                extraEnvsFrom:
+                  - secretRef:
+                      name: grafana-cloud-credentials
+
+                image:
+                  tag: "0.132.2"
+                  repository: otel/opentelemetry-collector-contrib
+
+                replicaCount: 1
+
+                # These are required for the prometheus scraping to work on the Kubernetes services.
+                clusterRole:
+                  create: true
+                  name: "otel-collector-clusterrole"
+                  rules:
+                    - apiGroups: [""]
+                      resources: ["services"]
+                      verbs: ["get", "list", "watch"]
+                  clusterRoleBinding:
+                    name: "otel-collector-clusterrolebinding"
+
+                serviceAccount:
+                  create: true
+                  name: "otel-collector-serviceaccount"
+
+                config:
+                  receivers:
+                    prometheus:
+                      config:
+                        scrape_configs:
+                          - job_name: 'kubernetes-services'
+                            kubernetes_sd_configs:
+                              - role: service
+                                namespaces:
+                                  own_namespace: false
+                                  names:
+                                    - default
+                                    - traefik
+
+                    otlp:
+                      protocols:
+                        grpc:
+                          endpoint: 0.0.0.0:4317
+                        http:
+                          endpoint: 0.0.0.0:4318
+
+                  processors:
+                    batch:
+                      send_batch_size: 8192
+                      timeout: 5s
+
+                  exporters:
+                    prometheusremotewrite:
+                      endpoint: https://prometheus-prod-36-prod-us-west-0.grafana.net/api/prom/push
+                      auth:
+                        authenticator: basicauth
+
+                  service:
+                    extensions: [health_check, basicauth]
+                    pipelines:
+                      metrics:
+                        receivers: [prometheus]
+                        processors: [batch]
+                        exporters: [prometheusremotewrite]
+
+                  extensions:
+                    basicauth:
+                      client_auth:
+                        username: ${env:GRAFANA_CLOUD_USERNAME}
+                        password: ${env:GRAFANA_CLOUD_PASSWORD}
+
           - name: cert-manager
             targetRevision: v1.19.1
             repoURL: https://charts.jetstack.io
