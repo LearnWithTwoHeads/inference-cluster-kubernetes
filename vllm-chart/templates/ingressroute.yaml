@@ -14,13 +14,13 @@ spec:
     {{- toYaml .Values.ingress.entryPoints | nindent 4 }}
   routes:
   - kind: Rule
-    match: {{ .Values.ingress.match }}
+    match: Host(`{{ .Values.hostname }}`)
     services:
     - name: {{ include "vllm.fullname" . }}
       namespace: {{ .Release.Namespace }}
       port: {{ .Values.service.port }}
   {{- if .Values.ingress.tls.enabled }}
   tls:
-    secretName: {{ .Values.ingress.tls.secretName }}
+    secretName: {{ include "vllm.fullname" . }}-tls
   {{- end }}
 {{- end }}

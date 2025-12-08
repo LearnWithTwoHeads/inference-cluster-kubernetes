@@ -7,12 +7,12 @@ metadata:
     {{- include "vllm.labels" . | nindent 4 }}
 spec:
   dnsNames:
-    {{- toYaml .Values.certificate.dnsNames | nindent 4 }}
+    - {{ .Values.hostname }}
   issuerRef:
     group: {{ .Values.certificate.issuerRef.group }}
     kind: {{ .Values.certificate.issuerRef.kind }}
     name: {{ .Values.certificate.issuerRef.name }}
-  secretName: {{ .Values.certificate.secretName }}
+  secretName: {{ include "vllm.fullname" . }}-tls
   usages:
     {{- toYaml .Values.certificate.usages | nindent 4 }}
 {{- end }}
