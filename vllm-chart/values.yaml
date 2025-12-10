@@ -57,6 +57,7 @@ vllm:
   # Additional arguments to pass to vLLM
   extraArgs:
     - --no-enable-prefix-caching
+    - --disable-log-stats
     
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
