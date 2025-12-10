@@ -38,6 +38,33 @@ spec:
 
         # List of applications to deploy
         applications:
+          # - name: datadog
+          #   targetRevision: 3.149.3
+          #   repoURL: https://helm.datadoghq.com
+          #   helm:
+          #     chart: datadog
+          #     releaseName: datadog
+          #     valuesObject:
+          #       datadog:
+          #         env:
+          #           - name: DD_COLLECT_GPU_TAGS
+          #             value: "true"
+          #           - name: DD_HOSTNAME
+          #             valueFrom:
+          #               fieldRef:
+          #                 fieldPath: spec.nodeName
+          #         site: "us5.datadoghq.com"
+          #         kubelet:
+          #           tlsVerify: false
+          #         clusterName: inference-cluster
+          #         appKeyExistingSecret: datadog-secret
+          #         apiKeyExistingSecret: datadog-secret
+          #         gpuMonitoring:
+          #           enabled: true
+          #           privilegedMode: true
+          #         prometheusScrape:
+          #           enabled: true
+          #           serviceEndpoints: true
           - name: otel-collector-metrics
             targetRevision: 0.140.0
             repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -46,7 +73,6 @@ spec:
               releaseName: otel-collector-metrics
               valuesObject:
                 mode: deployment
-
                 extraEnvsFrom:
                   - secretRef:
                       name: grafana-cloud-credentials
@@ -136,6 +162,8 @@ spec:
               chart: traefik
               releaseName: traefik
               valuesObject:
+                deployment:
+                  replicas: 5
                 metrics:
                   prometheus:
                     entryPoint: metrics

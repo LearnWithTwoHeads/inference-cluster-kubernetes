@@ -2,7 +2,7 @@
 
 hostname: "gpt-oss.domeasolid.app"
 
-replicaCount: 1
+replicaCount: 6
 
 image:
   repository: vllm/vllm-openai
@@ -39,23 +39,24 @@ service:
 
 resources:
   limits:
-    nvidia.com/gpu: 8 
+    nvidia.com/gpu: 1
   requests:
-    nvidia.com/gpu: 8
+    nvidia.com/gpu: 1
 
 # PersistentVolumeClaim configuration
 persistence:
   enabled: true
-  storageClassName: "gcore-nfs-3ab538e0-f64d-47bf-a72a-4fa646944598"
+  storageClassName: "gcore-nfs-ed8a4490-ad2e-4d37-808c-5ac3eea3c12f"
   accessMode: ReadWriteMany
-  size: 2000Gi
+  size: 500Gi
   mountPath: /root/.cache/huggingface
 
 # vLLM specific configuration
 vllm:
   model: openai/gpt-oss-20b
   # Additional arguments to pass to vLLM
-  extraArgs: []
+  extraArgs:
+    - --no-enable-prefix-caching
     
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
