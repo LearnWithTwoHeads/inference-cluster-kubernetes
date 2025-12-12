@@ -1,11 +1,12 @@
 apiVersion: v2
-name: vllm
-description: A Helm chart for deploying vLLM inference server
+name: llm-inference
+description: A Helm chart for deploying LLM inference servers (vLLM or SGLang)
 type: application
-version: 0.1.0
+version: 0.2.0
 appVersion: "0.6.0"
 keywords:
   - vllm
+  - sglang
   - llm
   - inference
   - ai

@@ -1,14 +1,18 @@
+{{- if .Values.vllm.enabled }}
+{{- if .Values.sglang.enabled }}
+{{- fail "Only one of vllm.enabled or sglang.enabled can be true" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "vllm.fullname" . }}
+  name: {{ include "llm.fullname" . }}
   labels:
-    {{- include "vllm.labels" . | nindent 4 }}
+    {{- include "llm.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "vllm.selectorLabels" . | nindent 6 }}
+      {{- include "llm.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       annotations:
@@ -22,7 +26,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "vllm.selectorLabels" . | nindent 8 }}
+        {{- include "llm.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -34,8 +38,8 @@ spec:
       - name: {{ .Chart.Name }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 12 }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "{{ .Values.vllm.image.repository }}:{{ .Values.vllm.image.tag }}"
+        imagePullPolicy: {{ .Values.vllm.image.pullPolicy }}
         command:
           - python3
           - -m
@@ -77,12 +81,12 @@ spec:
       {{- if .Values.persistence.enabled }}
       - name: cache
         persistentVolumeClaim:
-          claimName: {{ include "vllm.fullname" . }}
+          claimName: {{ include "llm.fullname" . }}
       {{- end }}
       {{- if .Values.chatTemplate.enabled }}
       - name: chat-template
         configMap:
-          name: {{ include "vllm.fullname" . }}-chat-template
+          name: {{ include "llm.fullname" . }}-chat-template
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -96,3 +100,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

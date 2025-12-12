@@ -1,15 +1,11 @@
-# Default values for vllm.
+# Default values for llm-inference chart.
+# This chart supports both vLLM and SGLang deployments.
 
 tenant: "yoofi.ai"
 
 hostname: "gpt-oss.domeasolid.app"
 
 replicaCount: 6
-
-image:
-  repository: vllm/vllm-openai
-  pullPolicy: IfNotPresent
-  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -54,17 +50,41 @@ persistence:
   mountPath: /root/.cache/huggingface
 
 # vLLM specific configuration
+# Set enabled: true to deploy vLLM (default)
 vllm:
+  enabled: true
+  image:
+    repository: vllm/vllm-openai
+    tag: latest
+    pullPolicy: IfNotPresent
   model: openai/gpt-oss-20b
   # Additional arguments to pass to vLLM
   extraArgs:
     - --no-enable-prefix-caching
     - --max-num-batched-tokens=1024
     - --enable-log-requests
-    
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
   #     value: "your-token-here"
+
+# SGLang specific configuration
+# Set enabled: true to deploy SGLang (mutually exclusive with vllm.enabled)
+sglang:
+  enabled: false
+  image:
+    repository: lmsysorg/sglang
+    tag: latest
+    pullPolicy: IfNotPresent
+  model: openai/gpt-oss-20b
+  # Additional arguments to pass to SGLang
+  extraArgs:
+    - --enable-metrics
+  env: []
+  #   - name: HF_TOKEN
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: hf-secret
+  #         key: hf_token
 
 nodeSelector: {}
 
@@ -92,7 +112,7 @@ certificate:
     - digital signature
     - key encipherment
 
-# Chat template configuration
+# Chat template configuration (vLLM only)
 # When enabled, the chat template content will be mounted as a file via ConfigMap
 # and passed to vLLM using --chat-template=/path/to/file
 chatTemplate:

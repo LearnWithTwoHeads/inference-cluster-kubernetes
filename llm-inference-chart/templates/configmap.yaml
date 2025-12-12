@@ -1,0 +1,11 @@
+{{- if and .Values.chatTemplate.enabled .Values.chatTemplate.content .Values.vllm.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "llm.fullname" . }}-chat-template
+  labels:
+    {{- include "llm.labels" . | nindent 4 }}
+data:
+  {{ .Values.chatTemplate.filename }}: |
+{{ .Values.chatTemplate.content | indent 4 }}
+{{- end }}

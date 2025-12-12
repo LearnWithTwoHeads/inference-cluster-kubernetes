@@ -2,9 +2,9 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ include "vllm.fullname" . }}-tls
+  name: {{ include "llm.fullname" . }}-tls
   labels:
-    {{- include "vllm.labels" . | nindent 4 }}
+    {{- include "llm.labels" . | nindent 4 }}
 spec:
   dnsNames:
     - {{ .Values.hostname }}
@@ -12,7 +12,7 @@ spec:
     group: {{ .Values.certificate.issuerRef.group }}
     kind: {{ .Values.certificate.issuerRef.kind }}
     name: {{ .Values.certificate.issuerRef.name }}
-  secretName: {{ include "vllm.fullname" . }}-tls
+  secretName: {{ include "llm.fullname" . }}-tls
   usages:
     {{- toYaml .Values.certificate.usages | nindent 4 }}
 {{- end }}
