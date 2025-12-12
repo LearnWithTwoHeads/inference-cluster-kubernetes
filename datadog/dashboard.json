@@ -1,0 +1,52 @@
+{
+  "title": "Yoofi's Dashboard Wed, Dec 10, 8:10:46 pm",
+  "description": "[[suggested_dashboards]]",
+  "widgets": [
+    {
+      "id": 130158169477190,
+      "definition": {
+        "title": "",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "time": {},
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:vllm_num_requests_running{$cluster_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 0, "width": 12, "height": 3 }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "cluster_name",
+      "prefix": "",
+      "available_values": ["cluster_name:inference-cluster"],
+      "default": "cluster_name:inference-cluster"
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed",
+  "pause_auto_refresh": false
+}

@@ -46,7 +46,7 @@ resources:
 # PersistentVolumeClaim configuration
 persistence:
   enabled: true
-  storageClassName: "gcore-nfs-ed8a4490-ad2e-4d37-808c-5ac3eea3c12f"
+  storageClassName: "sc-yoofi-cluster-shared-volume"
   accessMode: ReadWriteMany
   size: 500Gi
   mountPath: /root/.cache/huggingface
@@ -57,7 +57,8 @@ vllm:
   # Additional arguments to pass to vLLM
   extraArgs:
     - --no-enable-prefix-caching
-    - --disable-log-stats
+    - --max-num-batched-tokens=1024
+    - --enable-log-requests
     
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
@@ -74,13 +75,13 @@ ingress:
   enabled: true
   annotations: {}
   entryPoints:
-    - websecure
+    - web
   tls:
-    enabled: true
+    enabled: false
 
 # Certificate configuration for cert-manager
 certificate:
-  enabled: true
+  enabled: false
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
@@ -105,3 +106,9 @@ chatTemplate:
   filename: "chat_template.jinja"
   # The mount path where the chat template will be available
   mountPath: "/app/chat-templates"
+
+# Prometheus metrics configuration
+prometheus:
+  enabled: true
+  port: 8000
+  path: /metrics

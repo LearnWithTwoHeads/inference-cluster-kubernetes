@@ -38,33 +38,41 @@ spec:
 
         # List of applications to deploy
         applications:
-          # - name: datadog
-          #   targetRevision: 3.149.3
-          #   repoURL: https://helm.datadoghq.com
-          #   helm:
-          #     chart: datadog
-          #     releaseName: datadog
-          #     valuesObject:
-          #       datadog:
-          #         env:
-          #           - name: DD_COLLECT_GPU_TAGS
-          #             value: "true"
-          #           - name: DD_HOSTNAME
-          #             valueFrom:
-          #               fieldRef:
-          #                 fieldPath: spec.nodeName
-          #         site: "us5.datadoghq.com"
-          #         kubelet:
-          #           tlsVerify: false
-          #         clusterName: inference-cluster
-          #         appKeyExistingSecret: datadog-secret
-          #         apiKeyExistingSecret: datadog-secret
-          #         gpuMonitoring:
-          #           enabled: true
-          #           privilegedMode: true
-          #         prometheusScrape:
-          #           enabled: true
-          #           serviceEndpoints: true
+          - name: datadog
+            targetRevision: 3.149.3
+            repoURL: https://helm.datadoghq.com
+            namespace: datadog
+            helm:
+              chart: datadog
+              releaseName: datadog
+              valuesObject:
+                datadog:
+                  kubernetesResourcesAnnotationsAsTags:
+                    pods:
+                      hyperbolic.xyz/tenant: tenant
+                  env:
+                    - name: DD_COLLECT_GPU_TAGS
+                      value: "true"
+                    - name: DD_HOSTNAME
+                      valueFrom:
+                        fieldRef:
+                          fieldPath: spec.nodeName
+                  site: "us5.datadoghq.com"
+                  kubelet:
+                    tlsVerify: false
+                  clusterName: inference-cluster
+                  apiKeyExistingSecret: datadog-secret
+                  gpuMonitoring:
+                    enabled: true
+                    privilegedMode: true
+                  prometheusScrape:
+                    enabled: true
+                    serviceEndpoints: true
+                    additionalConfigs:
+                      - configurations:
+                          - send_histograms_buckets: true
+                            histogram_buckets_as_distributions: true
+                            timeout: 5
           - name: otel-collector-metrics
             targetRevision: 0.140.0
             repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
@@ -104,6 +112,7 @@ spec:
                       config:
                         scrape_configs:
                           - job_name: 'kubernetes-services'
+                            scrape_interval: 10s
                             kubernetes_sd_configs:
                               - role: service
                                 namespaces:
@@ -162,6 +171,8 @@ spec:
               chart: traefik
               releaseName: traefik
               valuesObject:
+                service:
+                  type: NodePort
                 deployment:
                   replicas: 5
                 metrics:
