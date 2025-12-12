@@ -1,0 +1,222 @@
+{
+  "title": "vLLM statistics",
+  "description": "[[suggested_dashboards]]",
+  "widgets": [
+    {
+      "id": 130158169477190,
+      "definition": {
+        "title": "Total number of requests running",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:vllm_num_requests_running{$cluster_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 0, "width": 12, "height": 3 }
+    },
+    {
+      "id": 4437626406024255,
+      "definition": {
+        "title": "TTFT latency",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "query1",
+                "query": "p99:vllm_time_to_first_token_seconds{*}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "query2",
+                "query": "p95:vllm_time_to_first_token_seconds{*}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "query3",
+                "query": "p50:vllm_time_to_first_token_seconds{*}"
+              }
+            ],
+            "formulas": [
+              { "formula": "query1" },
+              { "formula": "query2" },
+              { "formula": "query3" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 3, "width": 6, "height": 3 }
+    },
+    {
+      "id": 4832290023009804,
+      "definition": {
+        "title": "e2e vllm request latency",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "query1",
+                "query": "p99:vllm_e2e_request_latency_seconds{*}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "query2",
+                "query": "p95:vllm_e2e_request_latency_seconds{*}"
+              },
+              {
+                "data_source": "metrics",
+                "name": "query3",
+                "query": "p50:vllm_e2e_request_latency_seconds{*}"
+              }
+            ],
+            "formulas": [
+              { "formula": "query1" },
+              { "formula": "query2" },
+              { "formula": "query3" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 3, "width": 6, "height": 3 }
+    },
+    {
+      "id": 898643491272490,
+      "definition": {
+        "title": "Generated Tokens / Second",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "query1",
+                "query": "sum:vllm_generation_tokens.count{$cluster_name}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 6, "width": 6, "height": 3 }
+    },
+    {
+      "id": 2737533832535841,
+      "definition": {
+        "title": "Prompt Tokens / Second",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "data_source": "metrics",
+                "name": "query1",
+                "query": "sum:vllm_prompt_tokens.count{$cluster_name}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 6, "width": 6, "height": 3 }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "cluster_name",
+      "available_values": ["cluster_name:inference-cluster"],
+      "default": "cluster_name:inference-cluster"
+    },
+    {
+      "name": "model_name",
+      "prefix": "model_name",
+      "available_values": [],
+      "default": "*"
+    },
+    {
+      "name": "tenant",
+      "prefix": "tenant",
+      "available_values": [],
+      "default": "*"
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed",
+  "pause_auto_refresh": false
+}

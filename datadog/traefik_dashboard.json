@@ -1,0 +1,480 @@
+{
+  "title": "Traefik Ingress Statistics",
+  "description": "Comprehensive monitoring dashboard for Traefik ingress controller performance",
+  "widgets": [
+    {
+      "id": 1001,
+      "definition": {
+        "title": "Total Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }]
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 0, "y": 0, "width": 4, "height": 2 }
+    },
+    {
+      "id": 1002,
+      "definition": {
+        "title": "Error Rate %",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "errors_4xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:4*}.as_count()",
+                "aggregator": "sum"
+              },
+              {
+                "name": "errors_5xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:5*}.as_count()",
+                "aggregator": "sum"
+              },
+              {
+                "name": "total",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "formulas": [{ "formula": "(errors_4xx + errors_5xx) / total * 100" }],
+            "conditional_formats": [
+              { "comparator": ">", "value": 5, "palette": "white_on_red" },
+              { "comparator": ">", "value": 1, "palette": "white_on_yellow" },
+              { "comparator": ">=", "value": 0, "palette": "white_on_green" }
+            ]
+          }
+        ],
+        "autoscale": true,
+        "precision": 2,
+        "custom_unit": "%"
+      },
+      "layout": { "x": 4, "y": 0, "width": 4, "height": 2 }
+    },
+    {
+      "id": 1003,
+      "definition": {
+        "title": "Open Connections",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:traefik_open_connections{$cluster_name,$entrypoint}",
+                "aggregator": "last"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }]
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 8, "y": 0, "width": 4, "height": 2 }
+    },
+    {
+      "id": 2001,
+      "definition": {
+        "title": "Requests per Second",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)", "alias": "RPS" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 2, "width": 6, "height": 3 }
+    },
+    {
+      "id": 2002,
+      "definition": {
+        "title": "Requests by Status Code",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "success_2xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:2*}.as_count()"
+              },
+              {
+                "name": "redirect_3xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:3*}.as_count()"
+              },
+              {
+                "name": "client_error_4xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:4*}.as_count()"
+              },
+              {
+                "name": "server_error_5xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:5*}.as_count()"
+              }
+            ],
+            "formulas": [
+              { "formula": "per_second(success_2xx)", "alias": "2xx Success" },
+              { "formula": "per_second(redirect_3xx)", "alias": "3xx Redirect" },
+              { "formula": "per_second(client_error_4xx)", "alias": "4xx Client Error" },
+              { "formula": "per_second(server_error_5xx)", "alias": "5xx Server Error" }
+            ],
+            "style": {
+              "palette": "semantic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 2, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3001,
+      "definition": {
+        "title": "Request Latency (p50 / p95 / p99)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "p99",
+                "data_source": "metrics",
+                "query": "p99:traefik_entrypoint_request_duration_seconds{$cluster_name,$entrypoint}"
+              },
+              {
+                "name": "p95",
+                "data_source": "metrics",
+                "query": "p95:traefik_entrypoint_request_duration_seconds{$cluster_name,$entrypoint}"
+              },
+              {
+                "name": "p50",
+                "data_source": "metrics",
+                "query": "p50:traefik_entrypoint_request_duration_seconds{$cluster_name,$entrypoint}"
+              }
+            ],
+            "formulas": [
+              { "formula": "p99", "alias": "p99 Latency" },
+              { "formula": "p95", "alias": "p95 Latency" },
+              { "formula": "p50", "alias": "p50 Latency" }
+            ],
+            "style": {
+              "palette": "warm",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 5, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3002,
+      "definition": {
+        "title": "Latency by Entrypoint (p95)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "web",
+                "data_source": "metrics",
+                "query": "p95:traefik_entrypoint_request_duration_seconds{$cluster_name,entrypoint:web}"
+              },
+              {
+                "name": "websecure",
+                "data_source": "metrics",
+                "query": "p95:traefik_entrypoint_request_duration_seconds{$cluster_name,entrypoint:websecure}"
+              }
+            ],
+            "formulas": [
+              { "formula": "web", "alias": "web (HTTP)" },
+              { "formula": "websecure", "alias": "websecure (HTTPS)" }
+            ],
+            "style": {
+              "palette": "cool",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 5, "width": 6, "height": 3 }
+    },
+    {
+      "id": 4001,
+      "definition": {
+        "title": "Open Connections Over Time",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:traefik_open_connections{$cluster_name,$entrypoint} by {entrypoint}"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }],
+            "style": {
+              "palette": "purple",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 8, "width": 6, "height": 3 }
+    },
+    {
+      "id": 4002,
+      "definition": {
+        "title": "Error Breakdown (4xx vs 5xx)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "errors_4xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:4*}.as_count()"
+              },
+              {
+                "name": "errors_5xx",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,code:5*}.as_count()"
+              }
+            ],
+            "formulas": [
+              { "formula": "per_second(errors_4xx)", "alias": "4xx Client Errors" },
+              { "formula": "per_second(errors_5xx)", "alias": "5xx Server Errors" }
+            ],
+            "style": {
+              "palette": "orange",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "bars"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 8, "width": 6, "height": 3 }
+    },
+    {
+      "id": 5001,
+      "definition": {
+        "title": "Traffic by Entrypoint",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "web",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,entrypoint:web}.as_count()"
+              },
+              {
+                "name": "websecure",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,entrypoint:websecure}.as_count()"
+              }
+            ],
+            "formulas": [
+              { "formula": "per_second(web)", "alias": "web (HTTP)" },
+              { "formula": "per_second(websecure)", "alias": "websecure (HTTPS)" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "id": 5002,
+      "definition": {
+        "title": "Top Services by Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "toplist",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:traefik_entrypoint_requests.count{$cluster_name,$entrypoint,$service_name} by {service_name}.as_count()",
+                "aggregator": "sum"
+              }
+            ],
+            "formulas": [
+              {
+                "formula": "query1",
+                "limit": { "count": 10, "order": "desc" }
+              }
+            ]
+          }
+        ],
+        "style": {
+          "display": { "type": "stacked", "legend": "automatic" },
+          "palette": "dog_classic"
+        }
+      },
+      "layout": { "x": 6, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "id": 6001,
+      "definition": {
+        "title": "Latency by Router (p95)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "p95:traefik_entrypoint_request_duration_seconds{$cluster_name,$entrypoint} by {router_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 14, "width": 12, "height": 3 }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "cluster_name",
+      "available_values": ["cluster_name:inference-cluster"],
+      "default": "cluster_name:inference-cluster"
+    },
+    {
+      "name": "entrypoint",
+      "prefix": "entrypoint",
+      "available_values": ["web", "websecure"],
+      "default": "*"
+    },
+    {
+      "name": "service_name",
+      "prefix": "service_name",
+      "available_values": [],
+      "default": "*"
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed",
+  "pause_auto_refresh": false
+}

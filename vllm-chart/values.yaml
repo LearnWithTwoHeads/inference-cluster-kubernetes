@@ -1,5 +1,7 @@
 # Default values for vllm.
 
+tenant: "yoofi.ai"
+
 hostname: "gpt-oss.domeasolid.app"
 
 replicaCount: 6

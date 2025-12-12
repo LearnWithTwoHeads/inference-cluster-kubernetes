@@ -16,7 +16,7 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Values.prometheus.port }}"
         prometheus.io/path: "{{ .Values.prometheus.path }}"
-        hyperbolic.xyz/tenant: {{ .Release.Name }}
+        hyperbolic.xyz/tenant: {{ .Values.tenant }}
         {{- end }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
