@@ -5,7 +5,7 @@ tenant: "yoofi.ai"
 
 hostname: "gpt-oss.domeasolid.app"
 
-replicaCount: 6
+replicaCount: 3
 
 imagePullSecrets: []
 nameOverride: ""
@@ -44,7 +44,7 @@ resources:
 # PersistentVolumeClaim configuration
 persistence:
   enabled: true
-  storageClassName: "sc-yoofi-cluster-shared-volume"
+  storageClassName: "gcore-nfs-ed8a4490-ad2e-4d37-808c-5ac3eea3c12f"
   accessMode: ReadWriteMany
   size: 500Gi
   mountPath: /root/.cache/huggingface
@@ -62,7 +62,6 @@ vllm:
   extraArgs:
     - --no-enable-prefix-caching
     - --max-num-batched-tokens=1024
-    - --enable-log-requests
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
   #     value: "your-token-here"
@@ -97,13 +96,13 @@ ingress:
   enabled: true
   annotations: {}
   entryPoints:
-    - web
+    - websecure
   tls:
-    enabled: false
+    enabled: true
 
 # Certificate configuration for cert-manager
 certificate:
-  enabled: false
+  enabled: true
   issuerRef:
     group: cert-manager.io
     kind: ClusterIssuer
