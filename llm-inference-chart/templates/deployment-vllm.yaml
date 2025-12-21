@@ -75,6 +75,10 @@ spec:
           mountPath: {{ .Values.chatTemplate.mountPath }}
           readOnly: true
         {{- end }}
+        {{- if .Values.sharedMemory.enabled }}
+        - name: shm
+          mountPath: {{ .Values.sharedMemory.mountPath }}
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
       volumes:
@@ -87,6 +91,12 @@ spec:
       - name: chat-template
         configMap:
           name: {{ include "llm.fullname" . }}-chat-template
+      {{- end }}
+      {{- if .Values.sharedMemory.enabled }}
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: {{ .Values.sharedMemory.size }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

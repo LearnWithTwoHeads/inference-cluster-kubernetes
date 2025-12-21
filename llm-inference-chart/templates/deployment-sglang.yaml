@@ -67,6 +67,10 @@ spec:
         - name: cache
           mountPath: {{ .Values.persistence.mountPath }}
         {{- end }}
+        {{- if .Values.sharedMemory.enabled }}
+        - name: shm
+          mountPath: {{ .Values.sharedMemory.mountPath }}
+        {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
       volumes:
@@ -74,6 +78,12 @@ spec:
       - name: cache
         persistentVolumeClaim:
           claimName: {{ include "llm.fullname" . }}
+      {{- end }}
+      {{- if .Values.sharedMemory.enabled }}
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: {{ .Values.sharedMemory.size }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
