@@ -72,7 +72,7 @@ spec:
           mountPath: {{ .Values.sharedMemory.mountPath }}
         {{- end }}
         resources:
-          {{- toYaml .Values.resources | nindent 12 }}
+          {{- toYaml .Values.sglang.resources | nindent 12 }}
       volumes:
       {{- if .Values.persistence.enabled }}
       - name: cache

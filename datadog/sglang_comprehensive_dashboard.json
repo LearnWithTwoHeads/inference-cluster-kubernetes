@@ -1,0 +1,962 @@
+{
+  "title": "SGLang Comprehensive Dashboard",
+  "description": "Comprehensive monitoring dashboard for SGLang inference engine - includes latency, throughput, cache, and resource metrics",
+  "widgets": [
+    {
+      "id": 1001,
+      "definition": {
+        "title": "Requests Running",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_running_reqs{$cluster_name,$tenant,$model_name}",
+                "aggregator": "last"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }]
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 0, "y": 0, "width": 3, "height": 2 }
+    },
+    {
+      "id": 1002,
+      "definition": {
+        "title": "Requests Waiting",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_queue_reqs{$cluster_name,$tenant,$model_name}",
+                "aggregator": "last"
+              }
+            ],
+            "formulas": [{ "formula": "query1" }],
+            "conditional_formats": [
+              { "comparator": ">", "value": 10, "palette": "white_on_red" },
+              { "comparator": ">", "value": 5, "palette": "white_on_yellow" },
+              { "comparator": ">=", "value": 0, "palette": "white_on_green" }
+            ]
+          }
+        ],
+        "autoscale": true,
+        "precision": 0
+      },
+      "layout": { "x": 3, "y": 0, "width": 3, "height": 2 }
+    },
+    {
+      "id": 1003,
+      "definition": {
+        "title": "Token Usage %",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_token_usage{$cluster_name,$tenant,$model_name}",
+                "aggregator": "last"
+              }
+            ],
+            "formulas": [{ "formula": "query1 * 100" }],
+            "conditional_formats": [
+              { "comparator": ">", "value": 90, "palette": "white_on_red" },
+              { "comparator": ">", "value": 70, "palette": "white_on_yellow" },
+              { "comparator": ">=", "value": 0, "palette": "white_on_green" }
+            ]
+          }
+        ],
+        "autoscale": true,
+        "precision": 1,
+        "custom_unit": "%"
+      },
+      "layout": { "x": 6, "y": 0, "width": 3, "height": 2 }
+    },
+    {
+      "id": 1004,
+      "definition": {
+        "title": "Requests/sec",
+        "title_size": "16",
+        "title_align": "left",
+        "type": "query_value",
+        "requests": [
+          {
+            "response_format": "scalar",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:sglang_num_requests.count{$cluster_name,$tenant,$model_name}.as_count()",
+                "aggregator": "avg"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)" }]
+          }
+        ],
+        "autoscale": true,
+        "precision": 2
+      },
+      "layout": { "x": 9, "y": 0, "width": 3, "height": 2 }
+    },
+    {
+      "id": 2001,
+      "definition": {
+        "title": "Request Queue Depth Over Time",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "running",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_running_reqs{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "waiting",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_queue_reqs{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "running", "alias": "Running" },
+              { "formula": "waiting", "alias": "Waiting (Queue)" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 2, "width": 6, "height": 3 }
+    },
+    {
+      "id": 2002,
+      "definition": {
+        "title": "Token Usage Over Time",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_token_usage{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1 * 100", "alias": "Token Usage %" }],
+            "style": {
+              "palette": "warm",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100"
+        },
+        "markers": [
+          {
+            "value": "y = 90",
+            "display_type": "error dashed",
+            "label": "Critical"
+          },
+          {
+            "value": "y = 70",
+            "display_type": "warning dashed",
+            "label": "Warning"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 2, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3001,
+      "definition": {
+        "title": "Time to First Token (TTFT) - Latency Percentiles",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "p99",
+                "data_source": "metrics",
+                "query": "p99:sglang_time_to_first_token_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p95",
+                "data_source": "metrics",
+                "query": "p95:sglang_time_to_first_token_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p50",
+                "data_source": "metrics",
+                "query": "p50:sglang_time_to_first_token_seconds{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "p99", "alias": "p99" },
+              { "formula": "p95", "alias": "p95" },
+              { "formula": "p50", "alias": "p50 (median)" }
+            ],
+            "style": {
+              "palette": "orange",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 5, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3002,
+      "definition": {
+        "title": "End-to-End Request Latency - Percentiles",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "p99",
+                "data_source": "metrics",
+                "query": "p99:sglang_e2e_request_latency_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p95",
+                "data_source": "metrics",
+                "query": "p95:sglang_e2e_request_latency_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p50",
+                "data_source": "metrics",
+                "query": "p50:sglang_e2e_request_latency_seconds{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "p99", "alias": "p99" },
+              { "formula": "p95", "alias": "p95" },
+              { "formula": "p50", "alias": "p50 (median)" }
+            ],
+            "style": {
+              "palette": "purple",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 5, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3003,
+      "definition": {
+        "title": "Inter-Token Latency (ITL) - Streaming Performance",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "p99",
+                "data_source": "metrics",
+                "query": "p99:sglang_inter_token_latency_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p95",
+                "data_source": "metrics",
+                "query": "p95:sglang_inter_token_latency_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p50",
+                "data_source": "metrics",
+                "query": "p50:sglang_inter_token_latency_seconds{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "p99", "alias": "p99" },
+              { "formula": "p95", "alias": "p95" },
+              { "formula": "p50", "alias": "p50 (median)" }
+            ],
+            "style": {
+              "palette": "cool",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 8, "width": 6, "height": 3 }
+    },
+    {
+      "id": 3004,
+      "definition": {
+        "title": "Queue Time Distribution",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "p99",
+                "data_source": "metrics",
+                "query": "p99:sglang_queue_time_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p95",
+                "data_source": "metrics",
+                "query": "p95:sglang_queue_time_seconds{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "p50",
+                "data_source": "metrics",
+                "query": "p50:sglang_queue_time_seconds{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "p99", "alias": "p99" },
+              { "formula": "p95", "alias": "p95" },
+              { "formula": "p50", "alias": "p50" }
+            ],
+            "style": {
+              "palette": "green",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 8, "width": 6, "height": 3 }
+    },
+    {
+      "id": 4001,
+      "definition": {
+        "title": "Per-Stage Request Latency (p50)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "stage_latency",
+                "data_source": "metrics",
+                "query": "p50:sglang_per_stage_req_latency_seconds{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "stage_latency", "alias": "Stage Latency (p50)" }
+            ],
+            "style": {
+              "palette": "semantic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "id": 4002,
+      "definition": {
+        "title": "Utilization",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_utilization{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1 * 100", "alias": "Utilization %" }],
+            "style": {
+              "palette": "warm",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100"
+        }
+      },
+      "layout": { "x": 6, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "id": 5001,
+      "definition": {
+        "title": "Token Throughput - Generation vs Prompt",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "gen",
+                "data_source": "metrics",
+                "query": "sum:sglang_generation_tokens.count{$cluster_name,$tenant,$model_name}.as_count()"
+              },
+              {
+                "name": "prompt",
+                "data_source": "metrics",
+                "query": "sum:sglang_prompt_tokens.count{$cluster_name,$tenant,$model_name}.as_count()"
+              }
+            ],
+            "formulas": [
+              { "formula": "per_second(gen)", "alias": "Generated Tokens/s" },
+              { "formula": "per_second(prompt)", "alias": "Prompt Tokens/s" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 14, "width": 6, "height": 3 }
+    },
+    {
+      "id": 5002,
+      "definition": {
+        "title": "Request Rate",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:sglang_num_requests.count{$cluster_name,$tenant,$model_name}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)", "alias": "Requests/s" }],
+            "style": {
+              "palette": "green",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "bars"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 14, "width": 6, "height": 3 }
+    },
+    {
+      "id": 5003,
+      "definition": {
+        "title": "Total Tokens Processed (Generation + Prompt)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "gen",
+                "data_source": "metrics",
+                "query": "sum:sglang_generation_tokens.count{$cluster_name,$tenant,$model_name}.as_count()"
+              },
+              {
+                "name": "prompt",
+                "data_source": "metrics",
+                "query": "sum:sglang_prompt_tokens.count{$cluster_name,$tenant,$model_name}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(gen + prompt)", "alias": "Total Tokens/s" }],
+            "style": {
+              "palette": "purple",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 17, "width": 12, "height": 3 }
+    },
+    {
+      "id": 6001,
+      "definition": {
+        "title": "Cache Hit Rate",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_cache_hit_rate{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1 * 100", "alias": "Cache Hit Rate %" }],
+            "style": {
+              "palette": "green",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100"
+        }
+      },
+      "layout": { "x": 0, "y": 20, "width": 4, "height": 3 }
+    },
+    {
+      "id": 6002,
+      "definition": {
+        "title": "Cached Tokens",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "sum:sglang_cached_tokens.count{$cluster_name,$tenant,$model_name}.as_count()"
+              }
+            ],
+            "formulas": [{ "formula": "per_second(query1)", "alias": "Cached Tokens/s" }],
+            "style": {
+              "palette": "cool",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 4, "y": 20, "width": 4, "height": 3 }
+    },
+    {
+      "id": 6003,
+      "definition": {
+        "title": "Generation Throughput",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_gen_throughput{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1", "alias": "Gen Throughput" }],
+            "style": {
+              "palette": "orange",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 8, "y": 20, "width": 4, "height": 3 }
+    },
+    {
+      "id": 7001,
+      "definition": {
+        "title": "Retracted Requests (Scheduling Disruptions)",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_retracted_reqs{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1", "alias": "Retracted Requests" }],
+            "style": {
+              "palette": "warm",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "bars"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 23, "width": 6, "height": 3 }
+    },
+    {
+      "id": 7002,
+      "definition": {
+        "title": "Paused Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_paused_reqs{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1", "alias": "Paused Requests" }],
+            "style": {
+              "palette": "grey",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "area"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 23, "width": 6, "height": 3 }
+    },
+    {
+      "id": 8001,
+      "definition": {
+        "title": "Token Allocation - Used vs Max",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "used",
+                "data_source": "metrics",
+                "query": "avg:sglang_num_used_tokens{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "max",
+                "data_source": "metrics",
+                "query": "avg:sglang_max_total_num_tokens{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "used", "alias": "Used Tokens" },
+              { "formula": "max", "alias": "Max Tokens" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 26, "width": 6, "height": 3 }
+    },
+    {
+      "id": 8002,
+      "definition": {
+        "title": "New Token Ratio",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_new_token_ratio{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "query1", "alias": "New Token Ratio" }
+            ],
+            "style": {
+              "palette": "purple",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 26, "width": 6, "height": 3 }
+    },
+    {
+      "id": 9001,
+      "definition": {
+        "title": "Speculative Decoding - Accept Rate",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_spec_accept_rate{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1 * 100", "alias": "Accept Rate %" }],
+            "style": {
+              "palette": "cool",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ],
+        "yaxis": {
+          "min": "0",
+          "max": "100"
+        }
+      },
+      "layout": { "x": 0, "y": 29, "width": 6, "height": 3 }
+    },
+    {
+      "id": 9002,
+      "definition": {
+        "title": "Speculative Decoding - Accept Length",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "query1",
+                "data_source": "metrics",
+                "query": "avg:sglang_spec_accept_length{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [{ "formula": "query1", "alias": "Avg Accept Length" }],
+            "style": {
+              "palette": "green",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 29, "width": 6, "height": 3 }
+    },
+    {
+      "id": 10001,
+      "definition": {
+        "title": "Engine Startup & Load Times",
+        "title_size": "16",
+        "title_align": "left",
+        "show_legend": true,
+        "legend_layout": "auto",
+        "legend_columns": ["avg", "min", "max", "value", "sum"],
+        "type": "timeseries",
+        "requests": [
+          {
+            "response_format": "timeseries",
+            "queries": [
+              {
+                "name": "startup",
+                "data_source": "metrics",
+                "query": "avg:sglang_engine_startup_time{$cluster_name,$tenant,$model_name}"
+              },
+              {
+                "name": "load",
+                "data_source": "metrics",
+                "query": "avg:sglang_engine_load_weights_time{$cluster_name,$tenant,$model_name}"
+              }
+            ],
+            "formulas": [
+              { "formula": "startup", "alias": "Engine Startup Time" },
+              { "formula": "load", "alias": "Load Weights Time" }
+            ],
+            "style": {
+              "palette": "dog_classic",
+              "order_by": "values",
+              "line_type": "solid",
+              "line_width": "normal"
+            },
+            "display_type": "line"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 32, "width": 12, "height": 3 }
+    }
+  ],
+  "template_variables": [
+    {
+      "name": "cluster_name",
+      "available_values": ["cluster_name:inference-cluster"],
+      "default": "cluster_name:inference-cluster"
+    },
+    {
+      "name": "model_name",
+      "prefix": "model_name",
+      "available_values": [],
+      "default": "*"
+    },
+    {
+      "name": "tenant",
+      "prefix": "tenant",
+      "available_values": [],
+      "default": "*"
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "reflow_type": "fixed",
+  "pause_auto_refresh": false
+}

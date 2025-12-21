@@ -35,12 +35,6 @@ service:
   targetPort: 8000
   annotations: {}
 
-resources:
-  limits:
-    nvidia.com/gpu: 1
-  requests:
-    nvidia.com/gpu: 1
-
 # PersistentVolumeClaim configuration
 persistence:
   enabled: true
@@ -49,10 +43,16 @@ persistence:
   size: 500Gi
   mountPath: /root/.cache/huggingface
 
+# Shared memory configuration for tensor parallelism
+sharedMemory:
+  enabled: true
+  size: 10Gi
+  mountPath: /dev/shm
+
 # vLLM specific configuration
 # Set enabled: true to deploy vLLM (default)
 vllm:
-  enabled: true
+  enabled: false
   image:
     repository: vllm/vllm-openai
     tag: latest
@@ -60,16 +60,26 @@ vllm:
   model: openai/gpt-oss-20b
   # Additional arguments to pass to vLLM
   extraArgs:
-    - --no-enable-prefix-caching
+    # - --no-enable-prefix-caching
     - --max-num-batched-tokens=1024
+    - --tensor-parallel-size=2
+    # - --speculative-config.method=ngram
+    # - --speculative-config.num_speculative_tokens=5
+    # - --speculative-config.prompt_lookup_min=1
+    # - --speculative-config.prompt_lookup_max=4
   env: []
   #   - name: HUGGING_FACE_HUB_TOKEN
   #     value: "your-token-here"
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+    requests:
+      nvidia.com/gpu: 1
 
 # SGLang specific configuration
 # Set enabled: true to deploy SGLang (mutually exclusive with vllm.enabled)
 sglang:
-  enabled: false
+  enabled: true
   image:
     repository: lmsysorg/sglang
     tag: latest
@@ -84,6 +94,11 @@ sglang:
   #       secretKeyRef:
   #         name: hf-secret
   #         key: hf_token
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+    requests:
+      nvidia.com/gpu: 1
 
 nodeSelector: {}
 
